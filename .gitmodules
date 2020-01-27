@@ -1,0 +1,6 @@
+[submodule "fast_align"]
+	path = fast_align
+	url = https://github.com/clab/fast_align.git
+[submodule "tmxt"]
+	path = tmxt
+	url = https://github.com/sortiz/tmxt.git
