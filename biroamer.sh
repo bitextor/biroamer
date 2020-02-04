@@ -1,14 +1,23 @@
 #!/bin/bash
 
-
 export LANG=C.UTF-8
 
+if [ "$1" == "-h" ]
+then
+    echo "Usage: ./`basename $0` <lang1> <lang2> <mix_corpus>"
+    exit 0
+fi
+
+OMIT="python3 ./omit.py"
+MIX=$3
 FASTALIGN=./fast_align/build/fast_align
 ATOOLS=./fast_align/build/atools
 TMXT="python3 ./tmxt/tmxt.py"
 NER="python3 ./biner.py"
 BUILDTMX="python3 ./buildtmx.py"
-PROCS=1
+
+PROCS=4
+BLOCKSIZE=100000
 
 L1=$1
 L2=$2
@@ -20,19 +29,14 @@ MYTEMPDIR=$(mktemp -d)
 echo "Using temporary directory $MYTEMPDIR" 1>&2
 
 cat /dev/stdin | \
-$TMXT --codelist $L1,$L2 |\
-# RANDOM 
-shuf > $MYTEMPDIR/extracted
-
-# OMIT: HERE
-
-# MIX: HERE
-# RANDOM (again, cannot avoid randomize twice): HERE
-
+    $TMXT --codelist $L1,$L2 | \
+    parallel -j$PROCS -k -l $BLOCKSIZE --pipe $OMIT | \
+    cat - $MIX | \
+    shuf > $MYTEMPDIR/omitted-mixed
 
 # ANONYMIZE
-cut -f1 $MYTEMPDIR/extracted | parallel -j$PROCS -k -l 50000 --pipe $TOKL1 | tr "[[:upper:]]" "[[:lower:]]" >$MYTEMPDIR/f1.tok 
-cut -f2 $MYTEMPDIR/extracted | parallel -j$PROCS -k -l 50000 --pipe $TOKL2 | tr "[[:upper:]]" "[[:lower:]]" >$MYTEMPDIR/f2.tok 
+cut -f1 $MYTEMPDIR/omitted-mixed | parallel -j$PROCS -k -l $BLOCKSIZE --pipe $TOKL1 | tr "[[:upper:]]" "[[:lower:]]" >$MYTEMPDIR/f1.tok
+cut -f2 $MYTEMPDIR/omitted-mixed | parallel -j$PROCS -k -l $BLOCKSIZE --pipe $TOKL2 | tr "[[:upper:]]" "[[:lower:]]" >$MYTEMPDIR/f2.tok
 
 paste $MYTEMPDIR/f1.tok $MYTEMPDIR/f2.tok | sed 's%'$'\t''% ||| %g' >$MYTEMPDIR/fainput
 
@@ -42,13 +46,11 @@ $ATOOLS -i $MYTEMPDIR/forward.align -j $MYTEMPDIR/reverse.align -c grow-diag-fin
 
 rm -Rf $MYTEMPDIR/forward.align $MYTEMPDIR/reverse.align $MYTEMPDIR/fainput
 
-paste $MYTEMPDIR/extracted $MYTEMPDIR/f1.tok $MYTEMPDIR/f2.tok $MYTEMPDIR/symmetric.align |\
-#parallel -k -j$PROCS -l 10000 --pipe $NER | \
-$NER | \
+paste $MYTEMPDIR/omitted-mixed $MYTEMPDIR/f1.tok $MYTEMPDIR/f2.tok $MYTEMPDIR/symmetric.align |\
+parallel -k -j$PROCS -l $BLOCKSIZE --pipe $NER | \
+#$NER | \
 python3 buildtmx.py $L1 $L2
 
 echo "Removing temporary directory $MYTEMPDIR" 1>&2
 
 rm -Rf $MYTEMPDIR
-
-
