@@ -40,5 +40,9 @@ $ python -m spacy download en_core_web_sm
 ## Usage
 The script receives a TMX file as an input and outputs another TMX. The needed parameters are `lang1`, `lang2` and a corpus in moses format for mixing.
 ```
-cat l1-l2-file.tmx | ./biroamer.sh l1 l2 mix-corpus-l1-l2.txt > result-l1-l2.tmx
+$ cat l1-l2-file.tmx | ./biroamer.sh l1 l2 mix-corpus-l1-l2.txt > result-l1-l2.tmx
+```
+If your mixing corpus is in TMX format you can use `tmxt`, included in this repository, to obtain a sample in moses format:
+```
+cat mix-corpus.tmx | python tmxt/tmxt.py --codelist l1,l2 | head -$SIZE > mix-corpus.txt
 ```
