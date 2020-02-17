@@ -229,6 +229,9 @@ def get_entities(sentence):
 def main():
     for i in sys.stdin:
         fields = i.strip().split("\t")
+        if len(fields) < 5:
+            sys.stderr.write('Error with line: '+ str(fields))
+            continue
         outent = get_entities(fields[0])
         outsrc, outtrg = align(outent, fields[1], fields[2], fields[3], fields[4], reverse_alignment(fields[4]))
         sys.stdout.write(f"{outsrc}\t{outtrg}\n")
