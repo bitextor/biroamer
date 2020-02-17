@@ -1,5 +1,4 @@
 import csv
-import gzip
 import os
 import re
 import sys
@@ -13,10 +12,10 @@ if not os.path.exists(workdir+"/../output"):
     os.makedirs(workdir+"/../output")
 
 # Basenames
-filenames  = [re.sub("\.csv\.gz$", "", os.path.basename(i))+".{}-{}".format(l1,l2) for i in sys.argv[4:]]
+filenames  = [os.path.basename(i) for i in sys.argv[4:]]
 
 # Full paths
-ofnames    = [workdir+"/../output/"+re.sub(".{}-{}$".format(l1,l2), "", i)+"-output.csv.gz" for i in filenames]
+ofnames    = [workdir+"/../output/"+re.sub(".{}-{}$".format(l1,l2), "", i)+".aligned" for i in filenames]
 filenames  = [workdir+"/"+i for i in filenames]
 retainfile = workdir + "/TOTAL.retained"
 tokenfile1 = workdir + "/TOTAL.clean.{}".format(l1)
@@ -41,9 +40,9 @@ header = [l1, l2, "tok1", "tok2", "ali12", "ali21", "score12", "score21"]
 
 for nfile in range(len(filenames)):
     with open(filenames[nfile], "rt") as finput, \
-         gzip.open(ofnames[nfile], "wt") as foutput:         
-        outwriter = csv.writer(foutput, dialect=csv.excel)
-        outwriter.writerow(header)         
+         open(ofnames[nfile], "wt") as foutput:
+        outwriter = csv.writer(foutput, dialect=csv.excel, delimiter='\t')
+        outwriter.writerow(header)
         for line in finput:
             nline += 1
             
