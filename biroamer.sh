@@ -18,7 +18,7 @@ TMXT="python3 $DIR/tmxt/tmxt.py"
 NER="python3 $DIR/biner.py"
 BUILDTMX="python3 $DIR/buildtmx.py"
 
-PROCS=4
+PROCS=$(getconf _NPROCESSORS_ONLN)
 BLOCKSIZE=100000
 
 L1=$1
