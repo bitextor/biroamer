@@ -30,7 +30,7 @@ echo "Using temporary directory $MYTEMPDIR" 1>&2
 
 cat /dev/stdin | \
     $TMXT --codelist $L1,$L2 | \
-    parallel -j$PROCS -k -l $BLOCKSIZE --pipe $OMIT | \
+    $OMIT | \
     cat - $MIX | \
     shuf > $MYTEMPDIR/omitted-mixed
 
