@@ -8,13 +8,15 @@ then
     exit 0
 fi
 
-OMIT="python3 ./omit.py"
+# Get the script directory
+DIR="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
+OMIT="python3 $DIR/omit.py"
 MIX=$3
-FASTALIGN=./fast_align/build/fast_align
-ATOOLS=./fast_align/build/atools
-TMXT="python3 ./tmxt/tmxt.py"
-NER="python3 ./biner.py"
-BUILDTMX="python3 ./buildtmx.py"
+FASTALIGN=$DIR/fast_align/build/fast_align
+ATOOLS=$DIR/fast_align/build/atools
+TMXT="python3 $DIR/tmxt/tmxt.py"
+NER="python3 $DIR/biner.py"
+BUILDTMX="python3 $DIR/buildtmx.py"
 
 PROCS=4
 BLOCKSIZE=100000
@@ -22,8 +24,8 @@ BLOCKSIZE=100000
 L1=$1
 L2=$2
 
-TOKL1="python3 ./toktok.py"
-TOKL2="python3 ./toktok.py"
+TOKL1="python3 $DIR/toktok.py"
+TOKL2="python3 $DIR/toktok.py"
 
 MYTEMPDIR=$(mktemp -d)
 echo "Using temporary directory $MYTEMPDIR" 1>&2
@@ -62,7 +64,7 @@ rm -Rf $MYTEMPDIR/forward.align $MYTEMPDIR/reverse.align $MYTEMPDIR/fainput
 paste $MYTEMPDIR/omitted-mixed $MYTEMPDIR/f1.tok $MYTEMPDIR/f2.tok $MYTEMPDIR/symmetric.align |\
 parallel -k -j$PROCS -l $BLOCKSIZE --pipe $NER | \
 #$NER | \
-python3 buildtmx.py $L1 $L2
+$BUILDTMX $L1 $L2
 
 echo "Removing temporary directory $MYTEMPDIR" 1>&2
 
