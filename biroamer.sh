@@ -4,7 +4,7 @@ export LANG=C.UTF-8
 
 if [ "$1" == "-h" ]
 then
-    echo "Usage: ./`basename $0` <lang1> <lang2> <mix_corpus>"
+    echo "Usage: ./`basename $0` <lang1> <lang2> <mix_corpus> [seed]"
     exit 0
 fi
 
@@ -28,11 +28,24 @@ TOKL2="python3 ./toktok.py"
 MYTEMPDIR=$(mktemp -d)
 echo "Using temporary directory $MYTEMPDIR" 1>&2
 
+# Set seed for reproducibility
+if [ $# -eq 4 ]; then
+    SEED=$4
+else
+    SEED=$RANDOM
+fi
+get_seeded_random()
+{
+    seed="$1"
+    openssl enc -aes-256-ctr -pass pass:"$seed" -nosalt \
+        </dev/zero 2>/dev/null
+}
+
 cat /dev/stdin | \
     $TMXT --codelist $L1,$L2 | \
-    $OMIT | \
+    $OMIT -s $SEED | \
     cat - $MIX | \
-    shuf > $MYTEMPDIR/omitted-mixed
+    shuf --random-source=<(get_seeded_random $SEED) > $MYTEMPDIR/omitted-mixed
 
 # ANONYMIZE
 cut -f1 $MYTEMPDIR/omitted-mixed | parallel -j$PROCS -k -l $BLOCKSIZE --pipe $TOKL1 | tr "[[:upper:]]" "[[:lower:]]" >$MYTEMPDIR/f1.tok
