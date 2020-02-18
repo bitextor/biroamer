@@ -46,3 +46,9 @@ If your mixing corpus is in TMX format you can use `tmxt`, included in this repo
 ```
 cat mix-corpus.tmx | python tmxt/tmxt.py --codelist l1,l2 | head -$SIZE > mix-corpus.txt
 ```
+
+## Configuration
+Some of the parameters can be configured changing the variables of the `biroamer.sh` script:
+ * $TOKL1 and $TOKL2: for the tokenizer scripts.
+ * $PROCS: number of jobs to use in parallel, defaults to number of processes. Note that fastalign will use all the available processos regardless of the $PROCS value.
+ * $BLOCKSIZE: the size of the blocks (in lines) for each parallel job. Not recommended lower than 10,000.
