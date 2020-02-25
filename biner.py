@@ -104,9 +104,17 @@ def search_offsets(highlighted, opentag="<entity>", closetag="</entity>"):
         if len(parts) == 1:
             if i.endswith(closetag):
                 offsets.append(pos)
+                positem=pos
+                for j in parts[0].split(" ")[:-1]:
+                    positem += len(j)
+                    offsets.append(positem)
             pos += len(parts[0].replace(" ", ""))
         else:
             offsets.append(pos)
+            positem = pos
+            for j in parts[0].split(" ")[:-1]:
+                positem += len(j)
+                offsets.append(positem)
             pos += len(parts[0].replace(" ", ""))
             pos += len(parts[1].replace(" ", ""))
     return offsets
