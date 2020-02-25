@@ -206,7 +206,7 @@ def align(src, trg, src_tok, trg_tok, src_ali, trg_ali):
     cont_new_trg = continuous_highlighting(new_trg)
     cont_new_src = continuous_highlighting(new_src)
 
-    return cont_src, cont_new_trg
+    return src, cont_new_trg
 
 def reverse_alignment(alignment):
     """ Reverse the symmetric alingment, putting it in the proper order."""
