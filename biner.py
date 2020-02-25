@@ -195,16 +195,7 @@ def align(src, trg, src_tok, trg_tok, src_ali, trg_ali):
     points    = get_alignment_points(trg_off, trg_tok_list, words)
     new_trg   = color_segments(trg, points)
 
-    # Quality check, backwards
-    clusters2 = condense(search_offsets(new_trg), offsets(trg_tok_list))
-    words2    = align_loop(trg_tok_list, src_tok_list, trg_ali, src_ali, clusters2)
-    src_off   = offsets(src_tok_list)
-    points2   = get_alignment_points(src_off, src_tok_list, words2)
-    new_src   = color_segments(clean_tags(src), points2)
-
-    cont_src     = continuous_highlighting(src)
     cont_new_trg = continuous_highlighting(new_trg)
-    cont_new_src = continuous_highlighting(new_src)
 
     return src, cont_new_trg
 
