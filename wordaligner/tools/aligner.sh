@@ -22,12 +22,11 @@ fi
 
 WORKSUBDIR=$(mktemp -p $DATA_DIR -d)
 declare -A LENGTHS
-# Extract from CSV 
+# Put files in work directory
 for INPUT in $*; do
-  NAME=$(basename $INPUT .csv.gz)
-  zcat $INPUT | \
-  python3 $SCRIPTS/extract_from_csv.py $L1 $L2 >$WORKSUBDIR/$NAME.$L1-$L2
-  cat $WORKSUBDIR/$NAME.$L1-$L2
+  NAME=$(basename $INPUT)
+  cat $INPUT > $WORKSUBDIR/$NAME
+  cat $INPUT
 done >$WORKSUBDIR/TOTAL.$L1-$L2
 
 # Tokenize both sides independently
@@ -122,5 +121,9 @@ python3 $SCRIPTS/generate_output.py $L1 $L2 $WORKSUBDIR $*
 
 #clean
 rm -Rf $WORKSUBDIR
+
+# Allow other users full permission
+chmod 777 $DATA_DIR/output
+chmod 666 $DATA_DIR/output/*
 
 echo "SUCCESS: results are at $DATA_DIR/output"

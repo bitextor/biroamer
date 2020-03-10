@@ -7,6 +7,19 @@ import re
 PUNCTUATION = "[¡¿" + string.punctuation.replace("'","").replace("-","") + "]"
 nlp = spacy.load("en_core_web_sm")
 
+# Regular expression for emails
+# https://www.regextester.com/19
+email_regex = r"(\b|^)([a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*)(\b|$)"
+# Regular expression for phone numbers
+phone_regex = r"\(?(\+)?[\+\-\–\d]+[\(\)' '\+\-\–\d]{6,}\d\b"
+# Regular expressions for IP addresses
+# https://www.oreilly.com/library/view/regular-expressions-cookbook/9780596802837/ch07s16.html
+# https://www.regextester.com/25
+IPv4_regex = r"((?:[0-9]{1,3}\.){3}[0-9]{1,3})"
+IPv6_regex = r"(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))"
+
+all_regex = re.compile(r"(" + email_regex + r")|(" + phone_regex + r")|(" + IPv4_regex + r")|(" + IPv6_regex + r")")
+
 def include_nonaligned(word_alignment, meta_part):
     """Heuristic to add to the alignment intermediate words that are likely
     to be taken into account in the result"""
@@ -207,19 +220,34 @@ def reverse_alignment(alignment):
     return " ".join([f"{i[0]}-{i[1]}" for i in points_s])    
     
 def get_entities(sentence):
-    global nlp    
-    doc = nlp(sentence)
+    """ Obtain the entities that spacy detect or match any regex and append the entity tags """
+
+    global nlp
+    entities = list(nlp(sentence).ents) + list(all_regex.finditer(sentence))
+    # sort the objects by their (start, end) positions in sentence
+    entities.sort(key=lambda x: x.span() if type(x) is re.Match else (x.start_char, x.end_char))
+
     fragments = []
     cur = 0
 
-    for ent in doc.ents:
-        if ent.label_ not in {"PERSON", "FAC", "ORG", "PRODUCT", "GPE", "LOC"}:
+    for ent in entities:
+        if type(ent) is re.Match:
+            start = ent.span()[0]
+            end = ent.span()[1]
+        else:
+            if ent.label_ not in {"PERSON", "FAC", "ORG", "PRODUCT", "GPE", "LOC"}:
+                continue
+            start = ent.start_char
+            end = ent.end_char
+
+        if start < cur: # If two match overlap skip the second one
             continue
-        fragments.append(sentence[cur:ent.start_char])
+
+        fragments.append(sentence[cur:start])
         fragments.append(f'<entity>')
-        fragments.append(sentence[ent.start_char:ent.end_char])
+        fragments.append(sentence[start:end])
         fragments.append('</entity>')
-        cur = ent.end_char
+        cur = end
 
     fragments.append(sentence[cur:])
     
@@ -228,6 +256,9 @@ def get_entities(sentence):
 def main():
     for i in sys.stdin:
         fields = i.strip().split("\t")
+        if len(fields) < 5:
+            sys.stderr.write('Error with line: '+ str(fields))
+            continue
         outent = get_entities(fields[0])
         outsrc, outtrg = align(outent, fields[1], fields[2], fields[3], fields[4], reverse_alignment(fields[4]))
         sys.stdout.write(f"{outsrc}\t{outtrg}\n")
