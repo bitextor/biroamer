@@ -1,5 +1,10 @@
 # biroamer
-Biroamer is a small utility that will help you to ROAM(Random Omit Anonymize and Mix) your parallel corpus. It will read the input TMX and output another TMX. The rexulting TMX will have its sentences randomly shuffled and omitted, mixed with another corpus and entities highlighted with `<hi></hi` tags.
+
+![License](https://img.shields.io/badge/License-GPLv3-blue.svg)
+
+Biroamer is a small utility that will help you to ROAM (Random Omit Anonymize and Mix) your parallel corpus.
+It will read the input TMX and output another TMX.
+The resulting TMX will have its sentences randomly shuffled and omitted, mixed with another corpus, and its named entities highlighted with `<hi></hi>` tags.
 
 ## Installation instructions
 
@@ -38,7 +43,8 @@ $ python -m spacy download en_core_web_sm
 
 
 ## Usage
-The script receives a TMX file as an input and outputs another TMX. The needed parameters are `lang1`, `lang2` and a corpus in moses format for mixing.
+
+The script receives a TMX file as an input and outputs another TMX. The needed parameters are `lang1`, `lang2` and a corpus in Moses format for mixing.
 ```
 $ cat l1-l2-file.tmx | ./biroamer.sh l1 l2 mix-corpus-l1-l2.txt > result-l1-l2.tmx
 ```
@@ -48,7 +54,15 @@ cat mix-corpus.tmx | python tmxt/tmxt.py --codelist l1,l2 | head -$SIZE > mix-co
 ```
 
 ## Configuration
-Some of the parameters can be configured changing the variables of the `biroamer.sh` script:
+
+Some of the parameters can be configured by changing variables in the `biroamer.sh` script:
  * $TOKL1 and $TOKL2: for the tokenizer scripts.
  * $PROCS: number of jobs to use in parallel, defaults to number of processes. Note that fastalign will use all the available processos regardless of the $PROCS value.
  * $BLOCKSIZE: the size of the blocks (in lines) for each parallel job. Not recommended lower than 10,000.
+
+
+___
+
+![Connecting Europe Facility](https://www.paracrawl.eu/images/logo_en_cef273x39.png)
+
+All documents and software contained in this repository reflect only the authors' view. The Innovation and Networks Executive Agency of the European Union is not responsible for any use that may be made of the information it contains.
