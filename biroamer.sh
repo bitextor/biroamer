@@ -73,6 +73,16 @@ cat /dev/stdin | \
     cat - $MIX | \
     shuf --random-source=<(get_seeded_random $SEED) > $MYTEMPDIR/omitted-mixed
 
+# Append corpus to improve alignment
+if [ ! -z $ALIGN_CORPUS ]
+then
+    CAT="head -$(cat $MYTEMPDIR/omitted-mixed | wc -l)"
+    cat $MYTEMPDIR/omitted-mixed $ALIGN_CORPUS > $MYTEMPDIR/add-corpus
+    mv $MYTEMPDIR/add-corpus $MYTEMPDIR/omitted-mixed
+else
+    CAT=cat
+fi
+
 # ANONYMIZE
 cut -f1 $MYTEMPDIR/omitted-mixed | parallel -j$PROCS -k -l $BLOCKSIZE --pipe $TOKL1 | tr "[[:upper:]]" "[[:lower:]]" >$MYTEMPDIR/f1.tok
 cut -f2 $MYTEMPDIR/omitted-mixed | parallel -j$PROCS -k -l $BLOCKSIZE --pipe $TOKL2 | tr "[[:upper:]]" "[[:lower:]]" >$MYTEMPDIR/f2.tok
@@ -85,10 +95,10 @@ $ATOOLS -i $MYTEMPDIR/forward.align -j $MYTEMPDIR/reverse.align -c grow-diag-fin
 
 rm -Rf $MYTEMPDIR/forward.align $MYTEMPDIR/reverse.align $MYTEMPDIR/fainput
 
-paste $MYTEMPDIR/omitted-mixed $MYTEMPDIR/f1.tok $MYTEMPDIR/f2.tok $MYTEMPDIR/symmetric.align |\
-parallel -k -j$PROCS -l $BLOCKSIZE --pipe $NER | \
-#$NER | \
-$BUILDTMX $L1 $L2
+paste $MYTEMPDIR/omitted-mixed $MYTEMPDIR/f1.tok $MYTEMPDIR/f2.tok $MYTEMPDIR/symmetric.align \
+    | $CAT \
+    | parallel -k -j$PROCS -l $BLOCKSIZE --pipe $NER \
+    | $BUILDTMX $L1 $L2
 
 echo "Removing temporary directory $MYTEMPDIR" 1>&2
 
