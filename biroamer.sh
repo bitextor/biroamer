@@ -2,12 +2,6 @@
 
 export LANG=C.UTF-8
 
-if [ "$1" == "-h" ]
-then
-    echo "Usage: ./`basename $0` <lang1> <lang2> <mix_corpus> [seed]"
-    exit 0
-fi
-
 # Get the script directory
 DIR="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 OMIT="python3 $DIR/omit.py"
@@ -20,22 +14,11 @@ BUILDTMX="python3 $DIR/buildtmx.py"
 
 PROCS=$(getconf _NPROCESSORS_ONLN)
 BLOCKSIZE=100000
-
-L1=$1
-L2=$2
+SEED=$RANDOM
 
 TOKL1="python3 $DIR/toktok.py"
 TOKL2="python3 $DIR/toktok.py"
 
-MYTEMPDIR=$(mktemp -d)
-echo "Using temporary directory $MYTEMPDIR" 1>&2
-
-# Set seed for reproducibility
-if [ $# -eq 4 ]; then
-    SEED=$4
-else
-    SEED=$RANDOM
-fi
 get_seeded_random()
 {
     seed="$1"
@@ -43,6 +26,47 @@ get_seeded_random()
         </dev/zero 2>/dev/null
 }
 
+usage () {
+    echo "Usage: `basename $0` [options] <lang1> <lang2> <mix_corpus>"
+    echo "Options:"
+    echo "    -s SEED           Set random seed for reprodibility"
+    echo "    -a ALIGN_CORPUS   Extra corpus to improve alignment"
+    echo "                      It won't be included in the output"
+    echo "    -j JOBS           Number of jobs to run in parallel"
+    echo "    -b BLOCKSIZE      Number of lines for each job to be processed"
+    echo "    -h                Shows this message"
+}
+
+# Read optional arguments
+while getopts ":s:a:p:b:h" options
+do
+    case "${options}" in
+        s) SEED=$OPTARG;;
+        a) ALIGN_CORPUS=$OPTARG;;
+        p) PROCS=$OPTARG;;
+        b) BLOCKSIZE=$OPTARG;;
+        h) usage
+            exit 0;;
+        \?) usage 1>&2
+            exit 1;;
+    esac
+done
+# Read mandatory arguments
+L1=${@:$OPTIND:1}
+L2=${@:$OPTIND+1:1}
+MIX=${@:$OPTIND+2:1}
+if [ -z "$L1" ] || [ -z "$2" ] || [ -z $MIX ]
+then
+    echo "Error: <lang1>, <lang2> and <mix_corpus> are mandatory" 1>&2
+    echo "" 1>&2
+    usage 1>&2
+    exit 1
+fi
+
+MYTEMPDIR=$(mktemp -d)
+echo "Using temporary directory $MYTEMPDIR" 1>&2
+
+# Extract from TMX, omit, mix and shuffle
 cat /dev/stdin | \
     $TMXT --codelist $L1,$L2 | \
     $OMIT -s $SEED | \
