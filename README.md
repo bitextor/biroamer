@@ -69,7 +69,7 @@ $ cat mix-corpus.tmx | python tmxt/tmxt.py --codelist l1,l2 | head -$SIZE > mix-
 Some of the parameters can be configured by changing variables in the `biroamer.sh` script:
  * $TOKL1 and $TOKL2: the tokenizer scripts for `lang1` and `lang2` respectively. Tokenizers have to read sentences from stdin and output the tokenized ones to stdout.
 
-In the anonymization part, biroamer highlights named entities tagged as `PERSON` by [Spacy](https://spacy.io/) NER tagger, but sometimes entities are misclassified (e.g. tagging a person name as an organization name). So, if you want to be conservative you can configure the `ENTITIES` variable of `biner.py` and add more tags (see . For example:
+In the anonymization part, biroamer highlights named entities tagged as `PERSON` by [Spacy](https://spacy.io/) NER tagger, but sometimes entities are misclassified (e.g. tagging a person name as an organization name). So, if you want to be conservative you can configure the `ENTITIES` variable of `biner.py` and add more tags. For example:
 ```
 ENTITIES = {"PERSON", "ORG", "GPE", "FAC", "PRODUCT"}
 ```
