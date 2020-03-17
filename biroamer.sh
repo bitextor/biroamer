@@ -12,7 +12,7 @@ TMXT="python3 $DIR/tmxt/tmxt.py"
 NER="python3 $DIR/biner.py"
 BUILDTMX="python3 $DIR/buildtmx.py"
 
-PROCS=$(getconf _NPROCESSORS_ONLN)
+JOBS=$(getconf _NPROCESSORS_ONLN)
 BLOCKSIZE=100000
 SEED=$RANDOM
 
@@ -38,12 +38,12 @@ usage () {
 }
 
 # Read optional arguments
-while getopts ":s:a:p:b:h" options
+while getopts ":s:a:j:b:h" options
 do
     case "${options}" in
         s) SEED=$OPTARG;;
         a) ALIGN_CORPUS=$OPTARG;;
-        p) PROCS=$OPTARG;;
+        j) JOBS=$OPTARG;;
         b) BLOCKSIZE=$OPTARG;;
         h) usage
             exit 0;;
@@ -84,11 +84,12 @@ else
 fi
 
 # ANONYMIZE
-cut -f1 $MYTEMPDIR/omitted-mixed | parallel -j$PROCS -k -l $BLOCKSIZE --pipe $TOKL1 | tr "[[:upper:]]" "[[:lower:]]" >$MYTEMPDIR/f1.tok
-cut -f2 $MYTEMPDIR/omitted-mixed | parallel -j$PROCS -k -l $BLOCKSIZE --pipe $TOKL2 | tr "[[:upper:]]" "[[:lower:]]" >$MYTEMPDIR/f2.tok
+cut -f1 $MYTEMPDIR/omitted-mixed | parallel -j$JOBS -k -l $BLOCKSIZE --pipe $TOKL1 | tr "[[:upper:]]" "[[:lower:]]" >$MYTEMPDIR/f1.tok
+cut -f2 $MYTEMPDIR/omitted-mixed | parallel -j$JOBS -k -l $BLOCKSIZE --pipe $TOKL2 | tr "[[:upper:]]" "[[:lower:]]" >$MYTEMPDIR/f2.tok
 
 paste $MYTEMPDIR/f1.tok $MYTEMPDIR/f2.tok | sed 's%'$'\t''% ||| %g' >$MYTEMPDIR/fainput
 
+export OMP_NUM_THREADS=$JOBS
 $FASTALIGN -i $MYTEMPDIR/fainput -I 6 -d -o -v >$MYTEMPDIR/forward.align 
 $FASTALIGN -i $MYTEMPDIR/fainput -I 6 -d -o -v -r >$MYTEMPDIR/reverse.align
 $ATOOLS -i $MYTEMPDIR/forward.align -j $MYTEMPDIR/reverse.align -c grow-diag-final-and >$MYTEMPDIR/symmetric.align
@@ -97,7 +98,7 @@ rm -Rf $MYTEMPDIR/forward.align $MYTEMPDIR/reverse.align $MYTEMPDIR/fainput
 
 paste $MYTEMPDIR/omitted-mixed $MYTEMPDIR/f1.tok $MYTEMPDIR/f2.tok $MYTEMPDIR/symmetric.align \
     | $CAT \
-    | parallel -k -j$PROCS -l $BLOCKSIZE --pipe $NER \
+    | parallel -k -j$JOBS -l $BLOCKSIZE --pipe $NER \
     | $BUILDTMX $L1 $L2
 
 echo "Removing temporary directory $MYTEMPDIR" 1>&2
