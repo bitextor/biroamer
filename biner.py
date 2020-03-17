@@ -5,6 +5,7 @@ from bisect import bisect
 import re
 
 PUNCTUATION = "[¡¿" + string.punctuation.replace("'","").replace("-","") + "]"
+ENTITIES = {"PERSON"}
 nlp = spacy.load("en_core_web_sm")
 
 # Regular expression for emails
@@ -235,7 +236,7 @@ def get_entities(sentence):
             start = ent.span()[0]
             end = ent.span()[1]
         else:
-            if ent.label_ not in {"PERSON", "FAC", "ORG", "PRODUCT", "GPE", "LOC"}:
+            if ent.label_ not in ENTITIES:
                 continue
             start = ent.start_char
             end = ent.end_char

@@ -58,6 +58,12 @@ Some of the parameters can be configured by changing variables in the `biroamer.
  * $PROCS: number of jobs to use in parallel, defaults to number of processes. Note that fastalign will use all the available processos regardless of the $PROCS value.
  * $BLOCKSIZE: the size of the blocks (in lines) for each parallel job. Not recommended lower than 10,000.
 
+In the anonymization part, biroamer highlights named entities tagged as `PERSON` by [Spacy](https://spacy.io/) NER tagger, but sometimes entities are misclassified (e.g. tagging a person name as an organization name). So, if you want to be conservative you can configure the `ENTITIES` variable of `biner.py` and add more tags (see . For example:
+```
+ENTITIES = {"PERSON", "ORG", "GPE", "FAC", "PRODUCT"}
+```
+Are the ones that are most commonly confused with `PERSON`. See https://spacy.io/api/annotation#named-entities for more information about the tags.
+
 
 ___
 
