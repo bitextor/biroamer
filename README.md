@@ -45,11 +45,24 @@ $ python -m spacy download en_core_web_sm
 ## Usage
 The script receives a TMX file as an input and outputs another TMX. The needed parameters are `lang1`, `lang2` and a corpus in Moses format (tab-separated sentences: `sent1` `\t` `sent2`) for mixing.
 ```
+Usage: biroamer.sh [options] <lang1> <lang2> <mix_corpus>
+Options:
+    -s SEED           Set random seed for reprodibility
+    -a ALIGN_CORPUS   Extra corpus to improve alignment
+                      It won't be included in the output
+    -j JOBS           Number of jobs to run in parallel
+    -b BLOCKSIZE      Number of lines for each job to be processed
+    -h                Shows this message
+```
+If the input corpus plus the mixing corpus is not bigger enough (at least 100K sentences) it is advised to use `-a` option to add more sentences and improve the alignment.
+
+### Example
+```
 $ cat l1-l2-file.tmx | ./biroamer.sh l1 l2 mix-corpus-l1-l2.txt > result-l1-l2.tmx
 ```
 If your mixing corpus is in TMX format you can use `tmxt`, included in this repository, to obtain a sample in moses format:
 ```
-cat mix-corpus.tmx | python tmxt/tmxt.py --codelist l1,l2 | head -$SIZE > mix-corpus.txt
+$ cat mix-corpus.tmx | python tmxt/tmxt.py --codelist l1,l2 | head -$SIZE > mix-corpus.txt
 ```
 
 ## Configuration
