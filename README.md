@@ -4,7 +4,7 @@
 
 Biroamer is a small utility that will help you to ROAM (Random Omit Anonymize and Mix) your parallel corpus.
 It will read the input TMX and output another TMX.
-The resulting TMX will have its sentences randomly shuffled and omitted, mixed with another corpus, 
+The resulting TMX will have its sentences randomly shuffled and omitted (around of 10%), mixed with another corpus, 
 and its named entities highlighted with `<hi></hi>` tags.
 
 ## Installation instructions
