@@ -53,7 +53,7 @@ The needed parameters are `lang1` and `lang2` (in ISO 639-1 format) and a corpus
 ```
 Usage: biroamer.sh [options] <lang1> <lang2> <mix_corpus>
 Options:
-    -s SEED           Set random seed for reproducibility
+    -s SEED           Set random seed for reproducibility (relevant for Omitting and Randomizing steps)
     -a ALIGN_CORPUS   Extra corpus to improve alignment . It won't be included in the output
     -j JOBS           Number of jobs to run in parallel
     -b BLOCKSIZE      Number of lines for each job to be processed
