@@ -60,6 +60,28 @@ If the input corpus plus the mixing corpus is not bigger enough (at least 100K s
 ```
 $ cat l1-l2-file.tmx | ./biroamer.sh l1 l2 mix-corpus-l1-l2.txt > result-l1-l2.tmx
 ```
+A TMX file containing translation units like:
+```
+<tu>
+    <tuv xml:lang="en">
+        <seg>The e-mail address of John Doe is john@doe.com<seg>
+    </tuv>
+    <tuv xml:lang="es">
+        <seg>El correo electrónico de John Doe es john@doe.com<seg>
+    </tuv>
+</tu>
+```
+Will result in:
+```
+<tu>
+    <tuv xml:lang="en">
+        <seg>The e-mail address of <hi>John Doe</hi> is <hi>john@doe.com</hi<seg>
+    </tuv>
+    <tuv xml:lang="es">
+        <seg>El correo electrónico de <hi>John Doe</hi> es <hi>john@doe.com</hi><seg>
+    </tuv>
+</tu>
+```
 If your mixing corpus is in TMX format you can use `tmxt`, included in this repository, to obtain a sample in moses format:
 ```
 $ cat mix-corpus.tmx | python tmxt/tmxt.py --codelist l1,l2 | head -$SIZE > mix-corpus.txt
