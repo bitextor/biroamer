@@ -12,7 +12,7 @@ nlp = spacy.load("en_core_web_sm")
 # https://www.regextester.com/19
 email_regex = r"(\b|^)([a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*)(\b|$)"
 # Regular expression for phone numbers
-phone_regex = r"\(?(\+)?[\+\-\–\d]+[\(\)' '\+\-\–\d]{6,}\d\b"
+phone_regex = r"(?!\d{4}-\d{4})[\+\-\–\(\d].[\(\)' '\+\-\–\d]{5,12}\d{2}\b"
 # Regular expressions for IP addresses
 # https://www.oreilly.com/library/view/regular-expressions-cookbook/9780596802837/ch07s16.html
 # https://www.regextester.com/25
