@@ -6,7 +6,7 @@ Biroamer is a small utility that will help you anonymise or, better said, ROAM (
 
 Currently, we identify named entities using [Spacy](https://spacy.io/) NER tagger on one side of the corpus (we've only tested English but other languages could also be used) and tag the equivalent named-entity in the other side of the corpus using word alignments as computed by [fast_align](https://github.com/clab/fast_align). 
 
-You might want to take a look to the Configuration section to see what to do when Spacy NER tagger fails in identifying a named entity.  
+Before you get angry at the results (Spacy and most NER taggers are far from perfect!), you might want to take a look to the Configuration section to see what to do when Spacy NER tagger fails in identifying a named entity.  
 
 ## Installation instructions
 
@@ -142,7 +142,7 @@ So, if you want to be conservative you can configure the `ENTITIES` variable of 
 ```
 ENTITIES = {"PERSON", "ORG", "GPE", "FAC", "PRODUCT"}
 ```
-Are the ones that are most commonly confused with `PERSON`. 
+These categories are the ones most commonly confused with `PERSON`. 
 See https://spacy.io/api/annotation#named-entities for more information about the tags.
 
 
