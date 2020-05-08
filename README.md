@@ -12,7 +12,7 @@ and its named entities highlighted with `<hi></hi>` tags.
 ### Download
 
 ```
-$ git clone --recursive http://gitlab.prompsit.com/paracrawl/biroamer.git
+$ git clone --recursive http://github.com/bitextor/biroamer.git
 ```
 
 ### Requirements
