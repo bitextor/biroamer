@@ -2,10 +2,11 @@
 
 ![License](https://img.shields.io/badge/License-GPLv3-blue.svg)
 
-Biroamer is a small utility that will help you to ROAM (Random Omit Anonymize and Mix) your parallel corpus.
-It will read the input TMX and output another TMX.
-The resulting TMX will have its sentences randomly shuffled and omitted (around of 10%), mixed with another corpus, 
-and its named entities highlighted with `<hi></hi>` tags.
+Biroamer is a small utility that will help you anonymise or better said, ROAM (Random, Omit, Anonymize and Mix) your parallel corpus. It will read an input TMX and output another ROAMed TMX. This means that the resulting TMX will have its sentences randomly shuffled and omitted (around of 10%), mixed with another corpus, and its named entities highlighted with `<hi></hi>` tags.
+
+Currently, we identiy named entities using [Spacy](https://spacy.io/) NER tagger on one side of the corpus (we've only tested English but others can be tested) and tag the equivalent named-entity in the other side of the corpus using word alignments as computed by [fast_align](https://github.com/clab/fast_align). 
+
+You might want to take a look to the Configuration section to see what to do when Spacy NER tagger fails in identifying a named entity.  
 
 ## Installation instructions
 
@@ -48,20 +49,19 @@ $ python -m spacy download en_core_web_sm
 
 The script receives a TMX file as an input and outputs another TMX. 
 The needed parameters are `lang1` and `lang2` (in ISO 639-1 format) and a corpus in Moses format 
-(tab-separated sentences: `sent1` `\t` `sent2`) for mixing.
+(tab-separated sentences: `sent1` `\t` `sent2`) in the same language combination used in the parameters. This corpus will be used for the mixing option.
 
 ```
 Usage: biroamer.sh [options] <lang1> <lang2> <mix_corpus>
 Options:
     -s SEED           Set random seed for reproducibility (relevant for Omitting and Randomizing steps)
-    -a ALIGN_CORPUS   Extra corpus to improve alignment . It won't be included in the output
+    -a ALIGN_CORPUS   Extra corpus to improve word alignment needed for NER. It won't be included in the output.
     -j JOBS           Number of jobs to run in parallel
     -b BLOCKSIZE      Number of lines for each job to be processed
     -h                Shows this message
 ```
 
-If the input corpus plus the mixing corpus is not big enough (at least 100K sentences), 
-it is advised to use the `-a` option to add more sentences and improve the alignment.
+If the input corpus plus the mixing corpus are not big enough (at least 100K sentences) to compute word alignments to tag named entities in the other side of the corpus, it is advised to use the `-a` option to add more sentences and improve this alignment.
 
 If your mixing corpus is in TMX format, you can use `tmxt` (included in this repository) 
 to obtain a sample of size $SIZE in the aforementioned Moses format:
