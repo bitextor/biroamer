@@ -135,7 +135,8 @@ Some of the parameters can be configured by changing variables in the `biroamer.
  * $TOKL1 and $TOKL2: the tokenizer scripts for `lang1` and `lang2` respectively. Tokenizers must be able to read sentences from stdin and output the tokenized ones to stdout.
 
 In the anonymization step, biroamer highlights named entities tagged as `PERSON` by [Spacy](https://spacy.io/) NER tagger,
-but sometimes entities are misclassified (e.g. by tagging a person name as an organization name). 
+but sometimes Spacy misclassifies some entities (e.g. by tagging a person name as an organization name).
+This means that some person names won't be highlighted due to Spacy misclassifiying them.
 So, if you want to be conservative you can configure the `ENTITIES` variable of `biner.py` and add more tags. For example:
 
 ```
