@@ -142,7 +142,7 @@ So, if you want to be conservative you can configure the `ENTITIES` variable of 
 ```
 ENTITIES = {"PERSON", "ORG", "GPE", "FAC", "PRODUCT"}
 ```
-These categories are the ones most commonly confused with `PERSON`. 
+These categories are the ones most commonly mixed up with `PERSON`. 
 See https://spacy.io/api/annotation#named-entities for more information about the tags.
 
 
