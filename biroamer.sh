@@ -5,7 +5,6 @@ export LANG=C.UTF-8
 # Get the script directory
 DIR="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 OMIT="python3 $DIR/omit.py"
-MIX=$3
 FASTALIGN=$DIR/fast_align/build/fast_align
 ATOOLS=$DIR/fast_align/build/atools
 TMXT="python3 $DIR/tmxt/tmxt.py"
@@ -67,11 +66,11 @@ MYTEMPDIR=$(mktemp -d)
 echo "Using temporary directory $MYTEMPDIR" 1>&2
 
 # Extract from TMX, omit, mix and shuffle
-cat /dev/stdin | \
-    $TMXT --codelist $L1,$L2 | \
-    $OMIT -s $SEED | \
-    cat - $MIX | \
-    shuf --random-source=<(get_seeded_random $SEED) > $MYTEMPDIR/omitted-mixed
+cat /dev/stdin \
+    | $TMXT --codelist $L1,$L2 \
+    | $OMIT -s $SEED \
+    | cat - $MIX \
+    | shuf --random-source=<(get_seeded_random $SEED) > $MYTEMPDIR/omitted-mixed
 
 # Append corpus to improve alignment
 if [ ! -z $ALIGN_CORPUS ]
@@ -84,18 +83,26 @@ else
 fi
 
 # ANONYMIZE
-cut -f1 $MYTEMPDIR/omitted-mixed | parallel -j$JOBS -k -l $BLOCKSIZE --pipe $TOKL1 | tr "[[:upper:]]" "[[:lower:]]" >$MYTEMPDIR/f1.tok
-cut -f2 $MYTEMPDIR/omitted-mixed | parallel -j$JOBS -k -l $BLOCKSIZE --pipe $TOKL2 | tr "[[:upper:]]" "[[:lower:]]" >$MYTEMPDIR/f2.tok
+
+# Tokenize
+cut -f1 $MYTEMPDIR/omitted-mixed \
+    | parallel -j$JOBS -k -l $BLOCKSIZE --pipe $TOKL1 \
+    | tr "[[:upper:]]" "[[:lower:]]" >$MYTEMPDIR/f1.tok
+cut -f2 $MYTEMPDIR/omitted-mixed \
+    | parallel -j$JOBS -k -l $BLOCKSIZE --pipe $TOKL2 \
+    | tr "[[:upper:]]" "[[:lower:]]" >$MYTEMPDIR/f2.tok
 
 paste $MYTEMPDIR/f1.tok $MYTEMPDIR/f2.tok | sed 's%'$'\t''% ||| %g' >$MYTEMPDIR/fainput
 
+# Word-alignments
 export OMP_NUM_THREADS=$JOBS
-$FASTALIGN -i $MYTEMPDIR/fainput -I 6 -d -o -v >$MYTEMPDIR/forward.align 
+$FASTALIGN -i $MYTEMPDIR/fainput -I 6 -d -o -v >$MYTEMPDIR/forward.align
 $FASTALIGN -i $MYTEMPDIR/fainput -I 6 -d -o -v -r >$MYTEMPDIR/reverse.align
 $ATOOLS -i $MYTEMPDIR/forward.align -j $MYTEMPDIR/reverse.align -c grow-diag-final-and >$MYTEMPDIR/symmetric.align
 
 rm -Rf $MYTEMPDIR/forward.align $MYTEMPDIR/reverse.align $MYTEMPDIR/fainput
 
+# NER and build TMX
 paste $MYTEMPDIR/omitted-mixed $MYTEMPDIR/f1.tok $MYTEMPDIR/f2.tok $MYTEMPDIR/symmetric.align \
     | $CAT \
     | parallel -k -j$JOBS -l $BLOCKSIZE --pipe $NER \

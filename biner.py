@@ -1,7 +1,7 @@
+from bisect import bisect
 import spacy
 import sys
 import string
-from bisect import bisect
 import re
 
 PUNCTUATION = "[¡¿" + string.punctuation.replace("'","").replace("-","") + "]"
@@ -251,7 +251,7 @@ def get_entities(sentence):
         cur = end
 
     fragments.append(sentence[cur:])
-    
+
     return "".join(fragments)
 
 def main():
