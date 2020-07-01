@@ -2,17 +2,18 @@
 
 ![License](https://img.shields.io/badge/License-GPLv3-blue.svg)
 
-Biroamer is a small utility that will help you to ROAM (Random Omit Anonymize and Mix) your parallel corpus.
-It will read the input TMX and output another TMX.
-The resulting TMX will have its sentences randomly shuffled and omitted (around of 10%), mixed with another corpus, 
-and its named entities highlighted with `<hi></hi>` tags.
+Biroamer is a small utility that will help you anonymise or, better said, ROAM (Random, Omit, Anonymize and Mix) your parallel corpus. It will read an input TMX and output a ROAMed TMX. This means that the resulting TMX will have sentences from the input file randomly shuffled and omitted (around of 10% of the setences will be removed), mixed with another corpus, and with named entities highlighted using `<hi></hi>` tags.
+
+Currently, Biroamer identifies named entities using [Spacy](https://spacy.io/) NER tagger on one side of the corpus (only English has been tested, but other languages could also be used) and tag the equivalent named-entity on the other side of the corpus using word alignments as computed by [fast_align](https://github.com/clab/fast_align). 
+
+Before you get angry at the results (Spacy and most NER taggers are far from perfect!), you might want to take a look to the Configuration section to see what to do when Spacy NER tagger fails in identifying a named entity.  
 
 ## Installation instructions
 
 ### Download
 
 ```
-$ git clone --recursive http://gitlab.prompsit.com/paracrawl/biroamer.git
+$ git clone --recursive http://github.com/bitextor/biroamer.git
 ```
 
 ### Requirements
@@ -48,20 +49,19 @@ $ python -m spacy download en_core_web_sm
 
 The script receives a TMX file as an input and outputs another TMX. 
 The needed parameters are `lang1` and `lang2` (in ISO 639-1 format) and a corpus in Moses format 
-(tab-separated sentences: `sent1` `\t` `sent2`) for mixing.
+(tab-separated sentences: `sent1` `\t` `sent2`) in the same language combination used in the parameters. This corpus will be used for the mixing option.
 
 ```
 Usage: biroamer.sh [options] <lang1> <lang2> <mix_corpus>
 Options:
     -s SEED           Set random seed for reproducibility (relevant for Omitting and Randomizing steps)
-    -a ALIGN_CORPUS   Extra corpus to improve alignment . It won't be included in the output
+    -a ALIGN_CORPUS   Extra corpus to improve word alignment needed for NER. It won't be included in the output.
     -j JOBS           Number of jobs to run in parallel
     -b BLOCKSIZE      Number of lines for each job to be processed
     -h                Shows this message
 ```
 
-If the input corpus plus the mixing corpus is not big enough (at least 100K sentences), 
-it is advised to use the `-a` option to add more sentences and improve the alignment.
+If the input corpus plus the mixing corpus are not big enough (at least 100K sentences) to compute word alignments to tag named entities in the other side of the corpus, it is advised to use the `-a` option to add more sentences and improve this alignment.
 
 If your mixing corpus is in TMX format, you can use `tmxt` (included in this repository) 
 to obtain a sample of size $SIZE in the aforementioned Moses format:
@@ -135,13 +135,14 @@ Some of the parameters can be configured by changing variables in the `biroamer.
  * $TOKL1 and $TOKL2: the tokenizer scripts for `lang1` and `lang2` respectively. Tokenizers must be able to read sentences from stdin and output the tokenized ones to stdout.
 
 In the anonymization step, biroamer highlights named entities tagged as `PERSON` by [Spacy](https://spacy.io/) NER tagger,
-but sometimes entities are misclassified (e.g. by tagging a person name as an organization name). 
+but sometimes Spacy misclassifies some entities (e.g. by tagging a person name as an organization name).
+This means that some person names won't be highlighted due to Spacy misclassifiying them.
 So, if you want to be conservative you can configure the `ENTITIES` variable of `biner.py` and add more tags. For example:
 
 ```
 ENTITIES = {"PERSON", "ORG", "GPE", "FAC", "PRODUCT"}
 ```
-Are the ones that are most commonly confused with `PERSON`. 
+These categories are the ones most commonly mixed up with `PERSON`. 
 See https://spacy.io/api/annotation#named-entities for more information about the tags.
 
 
