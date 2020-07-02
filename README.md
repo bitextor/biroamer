@@ -25,7 +25,7 @@ $ git clone --recursive http://github.com/bitextor/biroamer.git
 
 Install packages required by fast_align:
 ```
-sudo apt-get install libgoogle-perftools-dev libsparsehash-dev
+sudo apt install libgoogle-perftools-dev libsparsehash-dev
 ```
 
 And build it:
@@ -47,17 +47,21 @@ $ python -m spacy download en_core_web_sm
 
 ## Usage
 
-The script receives a TMX file as an input and outputs another TMX. 
-The needed parameters are `lang1` and `lang2` (in ISO 639-1 format) and a corpus in Moses format 
-(tab-separated sentences: `sent1` `\t` `sent2`) in the same language combination used in the parameters. This corpus will be used for the mixing option.
+The script receives a TMX file as an input and outputs another TMX.
+The needed parameters are `lang1` and `lang2` (in ISO 639-1 format).
+Optionally a corpus in Moses format (tab-separated sentences: `sent1` `\t` `sent2`) in the same language combination used in the parameters can be given to be mixed with the input corpus.
+Also using `-o` will randomly omit about 10% of the sentences from the input corpus.
 
 ```
-Usage: biroamer.sh [options] <lang1> <lang2> <mix_corpus>
+Usage: biroamer.sh [options] <lang1> <lang2>
 Options:
-    -s SEED           Set random seed for reproducibility (relevant for Omitting and Randomizing steps)
-    -a ALIGN_CORPUS   Extra corpus to improve word alignment needed for NER. It won't be included in the output.
+    -s SEED           Set random seed for reprodibility
+    -a ALIGN_CORPUS   Extra corpus to improve alignment
+                      It won't be included in the output
     -j JOBS           Number of jobs to run in parallel
     -b BLOCKSIZE      Number of lines for each job to be processed
+    -m MIX_CORPUS     A corpus to mix with
+    -o                Enable random omitting of sentences
     -h                Shows this message
 ```
 
@@ -95,7 +99,7 @@ Bert and Margaret raised seven sons in the 50's.       Bert y Margaret criaron s
 And after running the following command:
 
 ```
-$ cat en-es-file.tmx | ./biroamer.sh en es mix-corpus-en-es.txt > result-en-es.tmx
+$ cat en-es-file.tmx | ./biroamer.sh -o -m mix-corpus-en-es.txt en es > result-en-es.tmx
 ```
 
 
