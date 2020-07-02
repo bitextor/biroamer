@@ -35,11 +35,13 @@ usage () {
     echo "    -b BLOCKSIZE      Number of lines for each job to be processed"
     echo "    -m MIX_CORPUS     A corpus to mix with"
     echo "    -o                Enable random omitting of sentences"
+    echo "    -t TOKL1          External tokenizer command for lang1"
+    echo "    -T TOKL2          External tokenizer command for lang2"
     echo "    -h                Shows this message"
 }
 
 # Read optional arguments
-while getopts ":s:a:j:b:m:h" options
+while getopts ":s:a:j:b:m:t:T:h" options
 do
     case "${options}" in
         s) SEED=$OPTARG;;
@@ -48,6 +50,8 @@ do
         b) BLOCKSIZE=$OPTARG;;
         m) MIX_CORPUS=$OPTARG;;
         o) OMIT=true;;
+        t) TOKL1=$OPTARG;;
+        T) TOKL2=$OPTARG;;
         h) usage
             exit 0;;
         \?) usage 1>&2

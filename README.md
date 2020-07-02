@@ -62,6 +62,8 @@ Options:
     -b BLOCKSIZE      Number of lines for each job to be processed
     -m MIX_CORPUS     A corpus to mix with
     -o                Enable random omitting of sentences
+    -t TOKL1          External tokenizer command for lang1
+    -T TOKL2          External tokenizer command for lang2
     -h                Shows this message
 ```
 
@@ -73,6 +75,7 @@ to obtain a sample of size $SIZE in the aforementioned Moses format:
 ```
 $ cat mixing-corpus.tmx | python tmxt/tmxt.py --codelist l1,l2 | head -$SIZE > mix-corpus.txt
 ```
+
 
 ### Example
 
@@ -132,11 +135,22 @@ Will result in `results-en-es.tmx` being like:
 </tu>
 ```
 
+External tokenizer command can be used with `-t` and `-T` for `lang1` and `lang2` respectively.
+For example:
+```
+$ cat en-es-file.tmx \
+    | ./biroamer.sh \
+        -o -m mix-corpus-en-es.txt \
+        -t "mosesdecoder/scripts/tokenizer/tokenizer.perl -l en -no-escape" \
+        -T "mosesdecoder/scripts/tokenizer/tokenizer.perl -l es -no-escape" \
+        en es \
+        > result-en-es.tmx
+```
+But it is recommended to use the default tokenizer unless you are working with a language that NLTK does not [support](https://raw.githubusercontent.com/nltk/nltk_data/gh-pages/packages/tokenizers/punkt.zip).
+Also note that the tokenizer command is already parallelized inside biroamer using parallel, so it is advised to use single-threaded commands.
+
 
 ## Configuration
-
-Some of the parameters can be configured by changing variables in the `biroamer.sh` script:
- * $TOKL1 and $TOKL2: the tokenizer scripts for `lang1` and `lang2` respectively. Tokenizers must be able to read sentences from stdin and output the tokenized ones to stdout.
 
 In the anonymization step, biroamer highlights named entities tagged as `PERSON` by [Spacy](https://spacy.io/) NER tagger,
 but sometimes Spacy misclassifies some entities (e.g. by tagging a person name as an organization name).
