@@ -4,7 +4,7 @@ export LANG=C.UTF-8
 
 # Get the script directory
 DIR="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
-OMIT="python3 $DIR/omit.py"
+OMIT_COMMAND="python3 $DIR/omit.py"
 FASTALIGN=$DIR/fast_align/build/fast_align
 ATOOLS=$DIR/fast_align/build/atools
 TMXT="python3 $DIR/tmxt/tmxt.py"
@@ -26,37 +26,46 @@ get_seeded_random()
 }
 
 usage () {
-    echo "Usage: `basename $0` [options] <lang1> <lang2> <mix_corpus>"
+    echo "Usage: `basename $0` [options] <lang1> <lang2>"
     echo "Options:"
     echo "    -s SEED           Set random seed for reprodibility"
     echo "    -a ALIGN_CORPUS   Extra corpus to improve alignment"
     echo "                      It won't be included in the output"
     echo "    -j JOBS           Number of jobs to run in parallel"
     echo "    -b BLOCKSIZE      Number of lines for each job to be processed"
+    echo "    -m MIX_CORPUS     A corpus to mix with"
+    echo "    -o                Enable random omitting of sentences"
     echo "    -h                Shows this message"
 }
 
 # Read optional arguments
-while getopts ":s:a:j:b:h" options
+while getopts ":s:a:j:b:m:h" options
 do
     case "${options}" in
         s) SEED=$OPTARG;;
         a) ALIGN_CORPUS=$OPTARG;;
         j) JOBS=$OPTARG;;
         b) BLOCKSIZE=$OPTARG;;
+        m) MIX_CORPUS=$OPTARG;;
+        o) OMIT=true;;
         h) usage
             exit 0;;
         \?) usage 1>&2
             exit 1;;
     esac
 done
+if [ "$OMIT" = true ]; then
+    OMIT_COMMAND="$OMIT_COMMAND -s $SEED"
+else
+    OMIT_COMMAND=cat
+fi
+
 # Read mandatory arguments
 L1=${@:$OPTIND:1}
 L2=${@:$OPTIND+1:1}
-MIX=${@:$OPTIND+2:1}
-if [ -z "$L1" ] || [ -z "$2" ] || [ -z $MIX ]
+if [ -z "$L1" ] || [ -z "$2" ]
 then
-    echo "Error: <lang1>, <lang2> and <mix_corpus> are mandatory" 1>&2
+    echo "Error: <lang1> and <lang2> are mandatory" 1>&2
     echo "" 1>&2
     usage 1>&2
     exit 1
@@ -68,9 +77,10 @@ echo "Using temporary directory $MYTEMPDIR" 1>&2
 # Extract from TMX, omit, mix and shuffle
 cat /dev/stdin \
     | $TMXT --codelist $L1,$L2 \
-    | $OMIT -s $SEED \
-    | cat - $MIX \
-    | shuf --random-source=<(get_seeded_random $SEED) > $MYTEMPDIR/omitted-mixed
+    | $OMIT_COMMAND \
+    | cat - $MIX_CORPUS \
+    | shuf --random-source=<(get_seeded_random $SEED) \
+    >$MYTEMPDIR/omitted-mixed
 
 # Append corpus to improve alignment
 if [ ! -z $ALIGN_CORPUS ]
