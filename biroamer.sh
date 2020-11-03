@@ -41,7 +41,7 @@ usage () {
 }
 
 # Read optional arguments
-while getopts ":s:a:j:b:m:t:T:h" options
+while getopts ":s:a:j:b:m:t:T:ho" options
 do
     case "${options}" in
         s) SEED=$OPTARG;;
