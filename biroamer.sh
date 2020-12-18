@@ -1,4 +1,5 @@
 #!/bin/bash
+set -eo pipefail
 
 export LANG=C.UTF-8
 
