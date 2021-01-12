@@ -90,8 +90,8 @@ cat /dev/stdin \
 # Append corpus to improve alignment
 if [ ! -z $ALIGN_CORPUS ]
 then
-    CAT="head -$(cat $MYTEMPDIR/omitted-mixed | wc -l)"
-    cat $MYTEMPDIR/omitted-mixed $ALIGN_CORPUS > $MYTEMPDIR/add-corpus
+    CAT="tail -$(cat $MYTEMPDIR/omitted-mixed | wc -l)"
+    cat $ALIGN_CORPUS $MYTEMPDIR/omitted-mixed >$MYTEMPDIR/add-corpus
     mv $MYTEMPDIR/add-corpus $MYTEMPDIR/omitted-mixed
 else
     CAT=cat
