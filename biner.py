@@ -220,16 +220,19 @@ def reverse_alignment(alignment):
     points_s = sorted(points, key=lambda tup: (tup[0], tup[1]))
     return " ".join([f"{i[0]}-{i[1]}" for i in points_s])    
     
-def get_entities(sentence):
+def get_entities(sentence, ner=True):
     """ Obtain the entities that spacy detect or match any regex and append the entity tags """
 
     global nlp
-    entities = list(nlp(sentence).ents) + list(all_regex.finditer(sentence))
+    entities = list(all_regex.finditer(sentence))
+    if ner:     # check if NER is enabled
+        entities += list(nlp(sentence).ents)
     # sort the objects by their (start, end) positions in sentence
     entities.sort(key=lambda x: x.span() if type(x) is re.Match else (x.start_char, x.end_char))
 
     fragments = []
     cur = 0
+    n_entities = 0
 
     for ent in entities:
         if type(ent) is re.Match:
@@ -240,6 +243,7 @@ def get_entities(sentence):
                 continue
             start = ent.start_char
             end = ent.end_char
+        n_entities += 1
 
         if start < cur: # If two match overlap skip the second one
             continue
@@ -252,7 +256,7 @@ def get_entities(sentence):
 
     fragments.append(sentence[cur:])
 
-    return "".join(fragments)
+    return "".join(fragments), n_entities
 
 def main():
     for i in sys.stdin:
@@ -260,10 +264,16 @@ def main():
         if len(fields) < 5:
             sys.stderr.write('Error with line: '+ str(fields))
             continue
-        outent = get_entities(fields[0])
-        outsrc, outtrg = align(outent, fields[1], fields[2], fields[3], fields[4], reverse_alignment(fields[4]))
-        sys.stdout.write(f"{outsrc}\t{outtrg}\n")
+        outent, n_ents = get_entities(fields[0])
+        # If there are entities on the source, align them to the target
+        # otherwise look for entities in the target only with regex
+        if n_ents > 0:
+            outsrc, outtrg = align(outent, fields[1], fields[2], fields[3], fields[4], reverse_alignment(fields[4]))
+        else:
+            outsrc = fields[0]
+            outtrg = get_entities(fields[1], ner=False)[0]
 
+        sys.stdout.write(f"{outsrc}\t{outtrg}\n")
 
 if __name__ == "__main__":
     main()
