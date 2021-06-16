@@ -32,17 +32,16 @@ sudo apt install libgoogle-perftools-dev libsparsehash-dev
 And build it:
 
 ```bash
-cd fast_align
 mkdir build
 cd build
-cmake ..
-make -j
+cmake .. -DCMAKE_INSTALL_PREFIX:PATH=/your/prefix/path
+make -j all install
 ```
 
 ### Install Python requirements
 
 ```bash
-pip install -r requirements.txt
+pip install .
 python -m spacy download en_core_web_sm
 ```
 

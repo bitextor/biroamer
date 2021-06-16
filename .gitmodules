@@ -1,6 +1,7 @@
 [submodule "fast_align"]
 	path = fast_align
 	url = https://github.com/clab/fast_align.git
+	ignore = dirty
 [submodule "tmxt"]
 	path = tmxt
 	url = https://github.com/zuny26/tmxt.git
