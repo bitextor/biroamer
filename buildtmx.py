@@ -73,6 +73,10 @@ def main(arguments):
     output.write(tmx_footer)
     output.close()
 
-if __name__ == '__main__':
+def args_and_main():
     arguments = docopt(__doc__, version='buildtmx 1.0')
     main(arguments)
+
+if __name__ == '__main__':
+    args_and_main()
+

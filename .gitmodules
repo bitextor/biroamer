@@ -3,4 +3,5 @@
 	url = https://github.com/clab/fast_align.git
 [submodule "tmxt"]
 	path = tmxt
-	url = https://github.com/sortiz/tmxt.git
+	url = https://github.com/zuny26/tmxt.git
+	branch = setup-biroamer
