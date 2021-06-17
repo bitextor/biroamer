@@ -5,19 +5,24 @@ export LANG=C.UTF-8
 
 # Get the script directory
 DIR="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
-OMIT_COMMAND="python3 $DIR/omit.py"
-FASTALIGN=$DIR/fast_align/build/fast_align
-ATOOLS=$DIR/fast_align/build/atools
-TMXT="python3 $DIR/tmxt/tmxt.py"
-NER="python3 $DIR/biner.py"
-BUILDTMX="python3 $DIR/buildtmx.py"
+
+if [ -x $DIR/build/fast_align/fast_align ] || [ -x $DIR/build/fast_align/atools ]; then
+    PATH=$DIR/fast_align/build:$PATH
+fi
+
+TMXT=tmxt
+OMIT_COMMAND=omit
+FASTALIGN=fast_align
+ATOOLS=atools
+NER=biner
+BUILDTMX=buildtmx
 
 JOBS=$(getconf _NPROCESSORS_ONLN)
 BLOCKSIZE=100000
 SEED=$RANDOM
 
-TOKL1="python3 $DIR/toktok.py"
-TOKL2="python3 $DIR/toktok.py"
+TOKL1=toktok
+TOKL2=toktok
 
 get_seeded_random()
 {
@@ -113,6 +118,8 @@ paste $MYTEMPDIR/f1.tok $MYTEMPDIR/f2.tok | sed 's%'$'\t''% ||| %g' >$MYTEMPDIR/
 
 # Word-alignments
 export OMP_NUM_THREADS=$JOBS
+
+
 $FASTALIGN -i $MYTEMPDIR/fainput -I 6 -d -o -v >$MYTEMPDIR/forward.align
 $FASTALIGN -i $MYTEMPDIR/fainput -I 6 -d -o -v -r >$MYTEMPDIR/reverse.align
 $ATOOLS -i $MYTEMPDIR/forward.align -j $MYTEMPDIR/reverse.align -c grow-diag-final-and >$MYTEMPDIR/symmetric.align
