@@ -1,12 +1,16 @@
+from flair.data import Sentence
+from flair.models import SequenceTagger
 from bisect import bisect
-import spacy
+import logging
 import sys
 import string
 import re
 
 PUNCTUATION = "[¡¿" + string.punctuation.replace("'","").replace("-","") + "]"
-ENTITIES = {"PERSON"}
-nlp = spacy.load("en_core_web_sm", disable=["tok2vec", "tagger", "parser", "attribute_ruler", "lemmatizer"])
+ENTITIES = {"PER"}
+
+logging.getLogger('flair').handlers[0].stream = sys.stderr
+nlp = SequenceTagger.load('flair/ner-english-fast')
 
 # Regular expression for emails
 # https://www.regextester.com/19
@@ -226,9 +230,11 @@ def get_entities(sentence, ner=True):
     global nlp
     entities = list(all_regex.finditer(sentence))
     if ner:     # check if NER is enabled
-        entities += list(nlp(sentence).ents)
+        sent_obj = Sentence(sentence)
+        nlp.predict(sent_obj)
+        entities += list(sent_obj.get_spans())
     # sort the objects by their (start, end) positions in sentence
-    entities.sort(key=lambda x: x.span() if type(x) is re.Match else (x.start_char, x.end_char))
+    entities.sort(key=lambda x: x.span() if type(x) is re.Match else (x.start_pos, x.end_pos))
 
     fragments = []
     cur = 0
@@ -239,10 +245,10 @@ def get_entities(sentence, ner=True):
             start = ent.span()[0]
             end = ent.span()[1]
         else:
-            if ent.label_ not in ENTITIES:
+            if ent.tag not in ENTITIES:
                 continue
-            start = ent.start_char
-            end = ent.end_char
+            start = ent.start_pos
+            end = ent.end_pos
         n_entities += 1
 
         if start < cur: # If two match overlap skip the second one
