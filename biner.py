@@ -6,7 +6,7 @@ import re
 
 PUNCTUATION = "[¡¿" + string.punctuation.replace("'","").replace("-","") + "]"
 ENTITIES = {"PERSON"}
-nlp = spacy.load("en_core_web_sm")
+nlp = spacy.load("en_core_web_sm", disable=["tok2vec", "tagger", "parser", "attribute_ruler", "lemmatizer"])
 
 # Regular expression for emails
 # https://www.regextester.com/19
