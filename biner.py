@@ -4,6 +4,7 @@ from bisect import bisect
 import logging
 import sys
 import string
+import torch
 import re
 
 PUNCTUATION = "[¡¿" + string.punctuation.replace("'","").replace("-","") + "]"
@@ -12,6 +13,7 @@ ENTITIES = {"PER"}
 # Fix flair logger printing to stdout
 logging.getLogger('flair').handlers[0].stream = sys.stderr
 # load flair ner
+torch.set_num_threads(1)
 nlp = SequenceTagger.load('flair/ner-english-fast')
 
 # Regular expression for emails
