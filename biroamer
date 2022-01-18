@@ -14,11 +14,11 @@ TMXT=tmxt
 OMIT_COMMAND=omit
 FASTALIGN=fast_align
 ATOOLS=atools
-NER=biner
+export NER=biner
 BUILDTMX=buildtmx
 
 JOBS=$(getconf _NPROCESSORS_ONLN)
-BLOCKSIZE=100000
+BLOCKSIZE=10000
 SEED=$RANDOM
 
 TOKL1=toktok
@@ -30,6 +30,31 @@ get_seeded_random()
     openssl enc -aes-256-ctr -pass pass:"$seed" -nosalt \
         </dev/zero 2>/dev/null
 }
+
+ner_job ()
+{
+    local slot=$1
+    local slot=$((slot-1))
+    # Determine gpu slot
+    if  which nvidia-smi >/dev/null; then
+        # If there is cuda available check for the env variable
+        if [ -z ${CUDA_VISIBLE_DEVICES+x} ]; then
+            # if CUDA variable not defined, use provided slot
+            export CUDA_VISIBLE_DEVICES=$slot
+        elif [[ -z "$CUDA_VISIBLE_DEVICES" ]]; then
+            : # If it's empty, do nothing
+            # ner won't use gpu in this case
+        else
+            # if it's defined, use the GPU that pointed out by the slot
+            IFS=',' read -r -a array <<< "$CUDA_VISIBLE_DEVICES"
+            export CUDA_VISIBLE_DEVICES=${array[$slot]}
+        fi
+    fi
+    # For non-gpu don't redefine CUDA env variable
+
+    $NER
+}
+export -f ner_job
 
 usage () {
     echo "Usage: `basename $0` [options] <lang1> <lang2>"
@@ -81,6 +106,22 @@ then
     exit 1
 fi
 
+# Determine number of gpu jobs
+if  which nvidia-smi >/dev/null; then
+    if [ -z ${CUDA_VISIBLE_DEVICES+x} ]; then
+        # For undefined variable use all GPUs
+        NER_JOBS=$(nvidia-smi -L | wc -l)
+    elif [[ -z "$CUDA_VISIBLE_DEVICES" ]]; then
+        # For empty variable use as many as CPUs
+        NER_JOBS=$JOBS
+    else
+        # Defined not empy variable, count devices
+        NER_JOBS=$(echo ${CUDA_VISIBLE_DEVICES//,/ } | wc -w)
+    fi
+else
+    NER_JOBS=$JOBS
+fi
+
 MYTEMPDIR=$(mktemp -d)
 echo "Using temporary directory $MYTEMPDIR" 1>&2
 
@@ -119,7 +160,6 @@ paste $MYTEMPDIR/f1.tok $MYTEMPDIR/f2.tok | sed 's%'$'\t''% ||| %g' >$MYTEMPDIR/
 # Word-alignments
 export OMP_NUM_THREADS=$JOBS
 
-
 $FASTALIGN -i $MYTEMPDIR/fainput -I 6 -d -o -v >$MYTEMPDIR/forward.align
 $FASTALIGN -i $MYTEMPDIR/fainput -I 6 -d -o -v -r >$MYTEMPDIR/reverse.align
 $ATOOLS -i $MYTEMPDIR/forward.align -j $MYTEMPDIR/reverse.align -c grow-diag-final-and >$MYTEMPDIR/symmetric.align
@@ -129,7 +169,7 @@ rm -Rf $MYTEMPDIR/forward.align $MYTEMPDIR/reverse.align $MYTEMPDIR/fainput
 # NER and build TMX
 paste $MYTEMPDIR/omitted-mixed $MYTEMPDIR/f1.tok $MYTEMPDIR/f2.tok $MYTEMPDIR/symmetric.align \
     | $CAT \
-    | parallel -k -j$JOBS -l $BLOCKSIZE --pipe $NER \
+    | parallel -k -j$NER_JOBS -l $BLOCKSIZE --pipe ner_job {%} \
     | $BUILDTMX $L1 $L2
 
 echo "Removing temporary directory $MYTEMPDIR" 1>&2

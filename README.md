@@ -4,9 +4,7 @@
 
 Biroamer is a small utility that will help you anonymise or, better said, ROAM (Random, Omit, Anonymize and Mix) your parallel corpus. It will read an input TMX and output a ROAMed TMX. This means that the resulting TMX will have sentences from the input file randomly shuffled and omitted (around of 10% of the setences will be removed), mixed with another corpus, and with named entities highlighted using `<hi></hi>` tags.
 
-Currently, Biroamer identifies named entities using [Spacy](https://spacy.io/) NER tagger on one side of the corpus (only English has been tested, but other languages could also be used) and tag the equivalent named-entity on the other side of the corpus using word alignments as computed by [fast_align](https://github.com/clab/fast_align).
-
-Before you get angry at the results (Spacy and most NER taggers are far from perfect!), you might want to take a look to the Configuration section to see what to do when Spacy NER tagger fails in identifying a named entity.  
+Currently, Biroamer identifies named entities using [Flair](https://github.com/flairNLP/flair) NER tagger on one side of the corpus (only English has been tested, but other languages could also be used) and tag the equivalent named-entity on the other side of the corpus using word alignments as computed by [fast_align](https://github.com/clab/fast_align).
 
 ## Installation instructions
 
@@ -149,19 +147,19 @@ $ cat en-es-file.tmx \
 But it is recommended to use the default tokenizer unless you are working with a language that NLTK does not [support](https://raw.githubusercontent.com/nltk/nltk_data/gh-pages/packages/tokenizers/punkt.zip).
 Also note that the tokenizer command is already parallelized inside biroamer using parallel, so it is advised to use single-threaded commands.
 
-## Configuration
+### Disable GPU
+By default, Flair uses GPUs if available.
+If you want to disable GPU processing or choose which GPUs should use, you just need to set `CUDA_VISIBLE_DEVICES` environment variable.
 
-In the anonymization step, biroamer highlights named entities tagged as `PERSON` by [Spacy](https://spacy.io/) NER tagger,
-but sometimes Spacy misclassifies some entities (e.g. by tagging a person name as an organization name).
-This means that some person names won't be highlighted due to Spacy misclassifiying them.
-So, if you want to be conservative you can configure the `ENTITIES` variable of `biner.py` and add more tags. For example:
-
-```text
-ENTITIES = {"PERSON", "ORG", "GPE", "FAC", "PRODUCT"}
+To avoid using GPU:
+```bash
+$ cat en-es-file.tmx | CUDA_VISIBLE_DEVICES="" biroamer -o -m mix-corpus-en-es.txt en es > result-en-es.tmx
 ```
 
-These categories are the ones most commonly mixed up with `PERSON`.
-See <https://spacy.io/api/annotation#named-entities> for more information about the tags.
+or use only 2 of 4 available:
+```bash
+$ cat en-es-file.tmx | CUDA_VISIBLE_DEVICES="0,1" biroamer -o -m mix-corpus-en-es.txt en es > result-en-es.tmx
+```
 
 ___
 

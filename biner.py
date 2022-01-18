@@ -10,10 +10,16 @@ import re
 PUNCTUATION = "[¡¿" + string.punctuation.replace("'","").replace("-","") + "]"
 ENTITIES = {"PER"}
 
+import flair
+# When using CPU force single threaded
+if flair.device.type != 'cuda':
+    torch.set_num_threads(1)
+
 # Fix flair logger printing to stdout
 logging.getLogger('flair').handlers[0].stream = sys.stderr
+# Suppress info messages from flair
+logging.getLogger('flair').setLevel(logging.ERROR)
 # load flair ner
-torch.set_num_threads(1)
 nlp = SequenceTagger.load('flair/ner-english-fast')
 
 # Regular expression for emails
