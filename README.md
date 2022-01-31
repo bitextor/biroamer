@@ -40,7 +40,11 @@ make -j all install
 
 ```bash
 pip install .
-python -m spacy download en_core_web_sm
+```
+
+Download Flair model
+```
+python -c "from flair.models import SequenceTagger; SequenceTagger.load('ner-english-fast')"
 ```
 
 ## Usage
