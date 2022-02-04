@@ -45,6 +45,7 @@ if __name__=="__main__":
              },
         entry_points={
             'console_scripts': [
+                'tmexplore=biroamer.tmxt.tmexplore:main',
                 'tmxt=biroamer.tmxt.tmxt:main',
                 'biner=biroamer.biner:main',
                 'toktok=biroamer.toktok:main',
