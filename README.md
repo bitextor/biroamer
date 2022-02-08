@@ -44,7 +44,7 @@ pip install .
 
 Download Flair model
 ```
-python -c "from flair.models import SequenceTagger; SequenceTagger.load('ner-english-fast')"
+python -c "from flair.models import SequenceTagger; SequenceTagger.load('flair/ner-english-fast')"
 ```
 
 ## Usage
