@@ -245,8 +245,6 @@ def entities2text(sentence, entities):
             start = ent.span()[0]
             end = ent.span()[1]
         else:
-            if ent.tag not in ENTITIES:
-                continue
             start = ent.start_pos
             end = ent.end_pos
         n_entities += 1
@@ -275,8 +273,9 @@ def get_entities_block(sentence_block, ner=True):
         nlp.predict(sent_obj_block) # Predict the entire block to allow batched prediction
 
         # Append the entities found by nlp to the entities found by regex
+        # only keep entities that we are interested in
         for entities, sent_obj in zip(entities_block, sent_obj_block):
-            entities += list(sent_obj.get_spans())
+            entities += [s for s in sent_obj.get_spans() if s.tag in ENTITIES]
 
         # Sort each entity list separately
         # only needed if ner is enabled
