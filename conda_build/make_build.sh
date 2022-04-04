@@ -95,7 +95,7 @@ conda create -y -n $CONDA_ENV_NAME -c conda-forge conda-build conda-verify pytho
 conda activate $CONDA_ENV_NAME
 conda update -y conda
 
-CONDA_CHANNELS="-c conda-forge -c bitextor"
+CONDA_CHANNELS="-c conda-forge -c bitextor -c bioconda"
 
 # Make build
 conda-build --no-test --no-anaconda-upload $CONDA_CHANNELS $CONDA_PACKAGE_PATH --python=$CONDA_PYTHON_VERSION
