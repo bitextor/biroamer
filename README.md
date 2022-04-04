@@ -47,6 +47,14 @@ Download Flair model
 python -c "from flair.models import SequenceTagger; SequenceTagger.load('flair/ner-english-fast')"
 ```
 
+### Conda package
+
+If you want to install Biroamer in a conda environment, run:
+
+```bash
+conda install -c conda-forge -c bitextor -c bioconda biroamer
+```
+
 ## Usage
 
 The script receives a TMX file as an input and outputs another TMX.
