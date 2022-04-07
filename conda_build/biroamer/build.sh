@@ -6,6 +6,9 @@ mkdir build && cd build
 CPATH="$PREFIX/include:$CPATH" cmake "-DCMAKE_INSTALL_PREFIX=$PREFIX" ..
 CPATH="$PREFIX/include:$CPATH" LD_LIBRARY_PATH="$PREFIX/lib:$LD_LIBRARY_PATH" make -j
 
+# We need to copy fast_align since the binaries are placed there (i.e. does not take into account CMAKE_INSTALL_PREFIX...)
+cp -r "$SRC_DIR/fast_align" "$PREFIX"
+
 popd > /dev/null
 
 # Install Biroamer

@@ -93,10 +93,10 @@ With `en-es-file.tmx` being an input TMX file containing translation units like:
 ```text
 <tu>
     <tuv xml:lang="en">
-        <seg>The e-mail address of John Doe is john@doe.com<seg>
+        <seg>The e-mail address of John Doe is john@doe.com</seg>
     </tuv>
     <tuv xml:lang="es">
-        <seg>El correo electrónico de John Doe es john@doe.com<seg>
+        <seg>El correo electrónico de John Doe es john@doe.com</seg>
     </tuv>
 </tu>
 ```
@@ -119,26 +119,26 @@ Will result in `results-en-es.tmx` being like:
 ```text
 <tu>
     <tuv xml:lang="en">
-        <seg><hi>Bert</hi> and <hi>Margaret</hi> raised seven sons in the 50's.<seg>
+        <seg><hi>Bert</hi> and <hi>Margaret</hi> raised seven sons in the 50's.</seg>
     </tuv>
     <tuv xml:lang="es">
-        <seg><hi>Bert</hi> y <hi>Margaret</hi> criaron siete hijos en los 50.<seg>
+        <seg><hi>Bert</hi> y <hi>Margaret</hi> criaron siete hijos en los 50.</seg>
     </tuv>
 </tu>
 <tu>
     <tuv xml:lang="en">
-        <seg>The e-mail address of <hi>John Doe</hi> is <hi>john@doe.com</hi><seg>
+        <seg>The e-mail address of <hi>John Doe</hi> is <hi>john@doe.com</hi></seg>
     </tuv>
     <tuv xml:lang="es">
-        <seg>El correo electrónico de <hi>John Doe</hi> es <hi>john@doe.com</hi><seg>
+        <seg>El correo electrónico de <hi>John Doe</hi> es <hi>john@doe.com</hi></seg>
     </tuv>
 </tu>
 <tu>
     <tuv xml:lang="en">
-        <seg>Can you trust your neighbours?<seg>
+        <seg>Can you trust your neighbours?</seg>
     </tuv>
     <tuv xml:lang="es">
-        <seg>¿Puedes confiar en tus vecinos?<seg>
+        <seg>¿Puedes confiar en tus vecinos?</seg>
     </tuv>
 </tu>
 ```
