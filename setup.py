@@ -14,7 +14,7 @@ if __name__=="__main__":
 
     setuptools.setup(
         name="biroamer",
-        version="0.1",
+        version="2.0",
         install_requires=requirements,
         license="GNU General Public License v3.0",
         author="Prompsit Language Engineering",
