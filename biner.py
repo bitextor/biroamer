@@ -247,8 +247,8 @@ def entities2text(sentence, entities):
         else:
             if ent.tag not in ENTITIES:
                 continue
-            start = ent.start_pos
-            end = ent.end_pos
+            start = ent.start_position
+            end = ent.end_position
         n_entities += 1
 
         if start < cur: # If two overlap, skip the second one
@@ -276,13 +276,13 @@ def get_entities_block(sentence_block, ner=True):
 
         # Append the entities found by nlp to the entities found by regex
         for entities, sent_obj in zip(entities_block, sent_obj_block):
-            entities += list(sent_obj.get_spans())
+            entities += list(sent_obj.get_spans('ner'))
 
         # Sort each entity list separately
         # only needed if ner is enabled
         for entities in entities_block:
             # sort the objects by their (start, end) positions in sentence
-            entities.sort(key=lambda x: x.span() if type(x) is re.Match else (x.start_pos, x.end_pos))
+            entities.sort(key=lambda x: x.span() if type(x) is re.Match else (x.start_position, x.end_position))
 
     return entities_block
 
