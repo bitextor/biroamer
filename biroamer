@@ -18,6 +18,7 @@ FASTALIGN=fast_align
 ATOOLS=atools
 export NER=biner
 BUILDTMX=buildtmx
+NODELTEMP=false
 
 JOBS=$(getconf _NPROCESSORS_ONLN)
 BLOCKSIZE=10000
@@ -70,11 +71,12 @@ usage () {
     echo "    -o                Enable random omitting of sentences"
     echo "    -t TOKL1          External tokenizer command for lang1"
     echo "    -T TOKL2          External tokenizer command for lang2"
+    echo "    -p                Do not delete temporary directory"
     echo "    -h                Shows this message"
 }
 
 # Read optional arguments
-while getopts ":s:a:j:b:m:t:T:ho" options
+while getopts ":s:a:j:b:m:t:T:pho" options
 do
     case "${options}" in
         s) SEED=$OPTARG;;
@@ -83,6 +85,7 @@ do
         b) BLOCKSIZE=$OPTARG;;
         m) MIX_CORPUS=$OPTARG;;
         o) OMIT=true;;
+        p) NODELTEMP=true;;
         t) TOKL1=$OPTARG;;
         T) TOKL2=$OPTARG;;
         h) usage
@@ -113,18 +116,26 @@ if  which nvidia-smi >/dev/null; then
     if [ -z ${CUDA_VISIBLE_DEVICES+x} ]; then
         # For undefined variable use all GPUs
         NER_JOBS=$(nvidia-smi -L | wc -l)
+        echo Using all $NER_JOBS GPUs >&2
     elif [[ -z "$CUDA_VISIBLE_DEVICES" ]]; then
         # For empty variable use as many as CPUs
         NER_JOBS=$JOBS
+        echo Disabled GPUs, using $NER_JOBS CPUs >&2
     else
         # Defined not empy variable, count devices
         NER_JOBS=$(echo ${CUDA_VISIBLE_DEVICES//,/ } | wc -w)
+        echo Using $NER_JOBS GPUs >&2
     fi
 else
     NER_JOBS=$JOBS
+    echo No GPUs available, using $NER_JOBS CPUs >&2
 fi
 
 MYTEMPDIR=$(mktemp -d)
+if [ "$NODELTEMP" = false ]; then
+    # Remove temporary dir when script fails or finishes
+    trap "rm -Rr $MYTEMPDIR" EXIT
+fi
 echo "Using temporary directory $MYTEMPDIR" 1>&2
 
 # Extract from TMX, omit, mix and shuffle
@@ -175,5 +186,3 @@ paste $MYTEMPDIR/omitted-mixed $MYTEMPDIR/f1.tok $MYTEMPDIR/f2.tok $MYTEMPDIR/sy
     | $BUILDTMX $L1 $L2
 
 echo "Removing temporary directory $MYTEMPDIR" 1>&2
-
-rm -Rf $MYTEMPDIR
