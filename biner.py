@@ -26,7 +26,7 @@ nlp = SequenceTagger.load('flair/ner-english-fast')
 # https://www.regextester.com/19
 email_regex = r"(\b|^)([a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*)(\b|$)"
 # Regular expression for phone numbers
-phone_regex = r"(?!\d{4}-\d{4})[\+\-\–\(\d].[\(\)' '\+\-\–\d]{5,12}\d{2}\b"
+phone_regex = r"(?![\-\–\(]?\s*\d{2,4}\s*[\-\–\s]\s*\d{3,4}\s*[\-\–\(]?)[\+\-\–\(\d].[\(\)' '\+\-\–\d]{6,12}\d{2}\b"
 # Regular expressions for IP addresses
 # https://www.oreilly.com/library/view/regular-expressions-cookbook/9780596802837/ch07s16.html
 # https://www.regextester.com/25
@@ -245,8 +245,6 @@ def entities2text(sentence, entities):
             start = ent.span()[0]
             end = ent.span()[1]
         else:
-            if ent.tag not in ENTITIES:
-                continue
             start = ent.start_position
             end = ent.end_position
         n_entities += 1
@@ -275,8 +273,9 @@ def get_entities_block(sentence_block, ner=True):
         nlp.predict(sent_obj_block) # Predict the entire block to allow batched prediction
 
         # Append the entities found by nlp to the entities found by regex
+        # only keep entities that we are interested in
         for entities, sent_obj in zip(entities_block, sent_obj_block):
-            entities += list(sent_obj.get_spans('ner'))
+            entities += [s for s in sent_obj.get_spans('ner') if s.tag in ENTITIES]
 
         # Sort each entity list separately
         # only needed if ner is enabled

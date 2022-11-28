@@ -8,6 +8,8 @@ DIR="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 
 if [ -x $DIR/build/fast_align/fast_align ] || [ -x $DIR/build/fast_align/atools ]; then
     PATH=$DIR/fast_align/build:$PATH
+elif [ -x $CONDA_PREFIX/fast_align/build/fast_align ] || [ -x $CONDA_PREFIX/fast_align/build/atools ]; then
+    PATH=$CONDA_PREFIX/fast_align/build:$PATH
 fi
 
 TMXT=tmxt
