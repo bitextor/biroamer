@@ -16,7 +16,7 @@ git clone --recursive http://github.com/bitextor/biroamer.git
 
 ### Requirements
 
-* Python >= 3.7
+* Python >= 3.7  (3.8 recommended)
 * GNU Parallel
 
 ### Build fast_align
