@@ -1,4 +1,4 @@
 docopt==0.6.2
-nltk>=3.4.5,<4
+nltk==3.4.5
 flair==0.13.1
 gensim<5.0
