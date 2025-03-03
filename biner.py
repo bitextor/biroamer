@@ -267,22 +267,25 @@ def get_entities_block(sentence_block, ner=True):
     global nlp
     # Search for regex entities
     entities_block = list(map(list, map(all_regex.finditer, sentence_block)))
-
-    if ner:     # check if NER is enabled
-        sent_obj_block = list(map(Sentence, sentence_block))
-        nlp.predict(sent_obj_block) # Predict the entire block to allow batched prediction
-
-        # Append the entities found by nlp to the entities found by regex
-        # only keep entities that we are interested in
-        for entities, sent_obj in zip(entities_block, sent_obj_block):
-            entities += [s for s in sent_obj.get_spans('ner') if s.tag in ENTITIES]
-
-        # Sort each entity list separately
-        # only needed if ner is enabled
-        for entities in entities_block:
-            # sort the objects by their (start, end) positions in sentence
-            entities.sort(key=lambda x: x.span() if type(x) is re.Match else (x.start_position, x.end_position))
-
+    try:
+        if ner:     # check if NER is enabled
+            sent_obj_block = list(map(Sentence, sentence_block))
+            
+            nlp.predict(sent_obj_block) # Predict the entire block to allow batched prediction
+            
+            # Append the entities found by nlp to the entities found by regex
+            # only keep entities that we are interested in
+            for entities, sent_obj in zip(entities_block, sent_obj_block):
+                entities += [s for s in sent_obj.get_spans('ner') if s.tag in ENTITIES]
+                
+            # Sort each entity list separately
+            # only needed if ner is enabled
+            for entities in entities_block:
+                # sort the objects by their (start, end) positions in sentence
+                entities.sort(key=lambda x: x.span() if type(x) is re.Match else (x.start_position, x.end_position))
+    except ValueError:
+        sys.stderr.write("Managed Flair exception in get_entities_block...\n")
+        
     return entities_block
 
 def process_block(fields_block, src_block):
